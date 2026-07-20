@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Registration Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     LOGIN PAGE
+     ============================================================ -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-logo"><img src="IMAGE.png"></div>
+    <h1>School Registration System</h1>
+    <p>Sign in to access your account</p>
+    <div class="login-error" id="login-error">Invalid username or password. Please try again.</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-username" placeholder="Enter your username" value="admin" />
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Enter your password" value="admin123" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="demo-creds">
+      <p>Demo Credentials:</p>
+      <span><strong>Admin:</strong> admin / admin123</span>
+      <span><strong>Staff:</strong> staff / staff123</span>
+      <span><strong>Lecturer:</strong> lecturer / lecturer123</span>
+      <span><strong>Student:</strong> student / student123</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     MAIN APPLICATION
+     ============================================================ -->
+<div id="app">
+
+  <!-- SIDEBAR — nav links injected by JS per role -->
+  <aside id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><Img src="IMAGE.png"></Img></div>
+      <div class="sidebar-logo-text">
+        <h2>School Registration</h2>
+        <p>Management System</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="sidebar-avatar">A</div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-name">Admin</span>
+          <span class="user-role" id="sidebar-role">Administrator</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main id="main">
+
+    <!-- TOPBAR -->
+    <header id="topbar">
+      <div class="topbar-title">
+        <h1 id="topbar-title">Dashboard Overview</h1>
+        <p id="topbar-subtitle">Monitor your school's performance and activities</p>
+      </div>
+      <div class="topbar-right">
+        <div class="welcome-text">Welcome back, <strong id="topbar-username">admin</strong></div>
+        <button class="icon-btn" title="Notifications">🔔<span class="badge"></span></button>
+        <div style="position:relative;">
+          <div class="topbar-avatar" id="topbar-avatar" onclick="toggleDropdown()">A</div>
+          <div class="dropdown-menu" id="avatar-dropdown">
+            <a onclick="navigate('settings'); toggleDropdown()">⚙️ Settings</a>
+            <a onclick="doLogout()">🚪 Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div id="page-content">
+
+      <!-- ====================================================
+           DASHBOARD VIEW
+           Used by: Admin, Staff, Lecturer, Student
+           Student sees extra "My Academic Profile" section
+           ==================================================== -->
+      <section id="view-dashboard" class="page-view active">
+
+        <!-- Stats row (same for all roles) -->
+        <div class="stats-grid">
+          <div class="stat-card blue">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-change">+12%</div>
+            <div class="stat-value" id="stat-students">6</div>
+            <div class="stat-label">Total Students</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-icon teal">📚</div>
+            <div class="stat-change">+8%</div>
+            <div class="stat-value" id="stat-courses">6</div>
+            <div class="stat-label">Active Courses</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon green">📅</div>
+            <div class="stat-change">+3%</div>
+            <div class="stat-value" id="stat-attendance">94%</div>
+            <div class="stat-label">Average Attendance</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-icon amber">⭐</div>
+            <div class="stat-change">+0.2</div>
+            <div class="stat-value" id="stat-gpa">3.72</div>
+            <div class="stat-label">Average GPA</div>
+          </div>
+        </div>
+
+        <!-- Recent Students + Upcoming Classes (same for all roles) -->
+        <div class="two-col" style="margin-bottom:20px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Students</div>
+              <!-- Hide "View All" for students since they can't nav to that page -->
+              <button class="btn btn-outline btn-sm hide-for-student" onclick="navigate('students')">View All</button>
+            </div>
+            <div class="card-body" id="dash-students-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Upcoming Classes</div>
+              <button class="btn btn-outline btn-sm hide-for-student" onclick="navigate('courses')">View All</button>
+            </div>
+            <div class="card-body" id="dash-classes-list"></div>
+          </div>
+        </div>
+
+        <!-- MY ACADEMIC PROFILE — shown only for Student role -->
+        <div id="student-academic-profile" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">My Academic Profile</div>
+            </div>
+            <div class="card-body">
+              <div class="academic-profile-grid">
+                <div class="ap-stat-box">
+                  <div class="ap-label">Current GPA</div>
+                  <div class="ap-value primary" id="ap-gpa">3.8</div>
+                </div>
+                <div class="ap-stat-box">
+                  <div class="ap-label">Attendance Rate</div>
+                  <div class="ap-value success" id="ap-attendance">95%</div>
+                </div>
+                <div class="ap-stat-box">
+                  <div class="ap-label">Enrolled Courses</div>
+                  <div class="ap-value blue" id="ap-courses">3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- ====================================================
+           STUDENT MANAGEMENT VIEW
+           Admin/Staff: full CRUD | Lecturer: view only
+           ==================================================== -->
+      <section id="view-students" class="page-view">
+        <div class="page-header">
+          <div>
+            <h2>Student Management</h2>
+            <p>Manage student records and information</p>
+          </div>
+          <button class="btn btn-primary" id="btn-add-student" onclick="openStudentModal()">+ Add New Student</button>
+        </div>
+        <div class="search-bar">
+          <span>🔍</span>
+          <input type="text" id="student-search" placeholder="Search by name or student ID..." oninput="filterStudents()" />
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th><th>Name</th><th>Age</th><th>Grade</th>
+                <th>GPA</th><th>Attendance</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="students-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ====================================================
+           COURSE MANAGEMENT VIEW
+           Admin/Staff: full CRUD | Lecturer: view only
+           ==================================================== -->
+      <section id="view-courses" class="page-view">
+        <div class="page-header">
+          <div>
+            <h2>Course Management</h2>
+            <p>Create and manage courses and subjects</p>
+          </div>
+          <button class="btn btn-primary" id="btn-add-course" onclick="openCourseModal()">+ Add New Course</button>
+        </div>
+        <div class="course-grid" id="courses-grid"></div>
+      </section>
+
+
+      <!-- ====================================================
+           ATTENDANCE & RESULTS VIEW
+           Admin / Staff / Lecturer
+           ==================================================== -->
+      <section id="view-attendance" class="page-view">
+        <div class="page-header">
+          <div>
+            <h2>Attendance &amp; Results</h2>
+            <p>Track student attendance and manage academic results</p>
+          </div>
+        </div>
+        <div class="select-wrapper">
+          <select id="att-course-select" onchange="loadAttendance()"></select>
+          <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchAttTab('attendance', this)">Attendance</button>
+            <button class="tab-btn" onclick="switchAttTab('results', this)">Results</button>
+          </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="att-attendance-tab">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Mark Attendance</div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <input type="date" id="att-date" />
+                <button class="btn btn-primary" onclick="saveAttendance()">Save Attendance</button>
+              </div>
+            </div>
+            <div class="table-wrapper" style="border:none;border-radius:0;">
+              <table>
+                <thead><tr><th>Student ID</th><th>Name</th><th>Grade</th><th>Status</th></tr></thead>
+                <tbody id="attendance-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="att-results-tab" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Enter Results</div>
+              <button class="btn btn-primary" onclick="saveResults()">Save Results</button>
+            </div>
+            <div class="table-wrapper" style="border:none;border-radius:0;">
+              <table>
+                <thead><tr><th>Student ID</th><th>Name</th><th>Grade</th><th>Score (%)</th><th>Grade Letter</th></tr></thead>
+                <tbody id="results-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ====================================================
+           USER ROLES & ACCESS — Admin only
+           ==================================================== -->
+      <section id="view-users" class="page-view">
+        <div class="page-header">
+          <div>
+            <h2>User Roles &amp; Access</h2>
+            <p>Manage user accounts and role-based permissions</p>
+          </div>
+          <button class="btn btn-primary" onclick="openUserModal()">+ Add New User</button>
+        </div>
+        <div class="roles-summary">
+          <div class="role-summary-card">
+            <div class="role-icon" style="background:#fce7f3;color:#db2777;">🛡️</div>
+            <h4>Administrator</h4><p>Full system access and control</p>
+            <div class="role-count" id="count-admin">1</div>
+          </div>
+          <div class="role-summary-card">
+            <div class="role-icon" style="background:var(--blue-light);color:var(--blue);">👔</div>
+            <h4>Academic Staff</h4><p>Manage records and results</p>
+            <div class="role-count" id="count-staff">1</div>
+          </div>
+          <div class="role-summary-card">
+            <div class="role-icon" style="background:var(--success-light);color:#16a34a;">🎓</div>
+            <h4>Lecturer</h4><p>Enter results and attendance</p>
+            <div class="role-count" id="count-lecturer">1</div>
+          </div>
+          <div class="role-summary-card">
+            <div class="role-icon" style="background:var(--purple-light);color:var(--purple);">🧑‍🎓</div>
+            <h4>Student</h4><p>View profile and records</p>
+            <div class="role-count" id="count-student">1</div>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+
+      <!-- ====================================================
+           SETTINGS — all roles
+           ==================================================== -->
+      <section id="view-settings" class="page-view">
+        <div class="page-header">
+          <div><h2>Settings</h2><p>Manage your account and system preferences</p></div>
+        </div>
+        <div class="settings-grid">
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <!-- Profile -->
+            <div class="card">
+              <div class="card-header"><div class="card-title">Profile Information</div></div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group"><label>Username</label><input type="text" id="set-username" /></div>
+                  <div class="form-group"><label>Email</label><input type="email" id="set-email" /></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Phone</label><input type="text" id="set-phone" placeholder="+1 234-567-8900" /></div>
+                  <div class="form-group"><label>Role</label><input type="text" id="set-role" readonly /></div>
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+              </div>
+            </div>
+            <!-- Change Password -->
+            <div class="card">
+              <div class="card-header"><div class="card-title">Change Password</div></div>
+              <div class="card-body">
+                <div class="form-group"><label>Current Password</label><input type="password" id="set-curr-pw" placeholder="Enter current password" /></div>
+                <div class="form-group"><label>New Password</label><input type="password" id="set-new-pw" placeholder="Enter new password" /></div>
+                <div class="form-group"><label>Confirm New Password</label><input type="password" id="set-confirm-pw" placeholder="Confirm new password" /></div>
+                <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <!-- Notifications -->
+            <div class="card">
+              <div class="card-header"><div class="card-title">Notifications</div></div>
+              <div class="card-body">
+                <div class="toggle-row"><span>Email Notifications</span><label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label></div>
+                <div class="toggle-row"><span>SMS Notifications</span><label class="toggle"><input type="checkbox" /><span class="slider"></span></label></div>
+                <div class="toggle-row"><span>Push Notifications</span><label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label></div>
+              </div>
+            </div>
+            <!-- System Info -->
+            <div class="card">
+              <div class="card-header"><div class="card-title">System Info</div></div>
+              <div class="card-body">
+                <div class="sys-info-row"><span>Version</span><span>1.0.0</span></div>
+                <div class="sys-info-row"><span>Last Updated</span><span>Jan 15, 2024</span></div>
+                <div class="sys-info-row"><span>Database</span><span style="color:var(--success);">● Connected</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /page-content -->
+  </main>
+</div><!-- /app -->
+
+
+<!-- ============================================================
+     MODALS
+     ============================================================ -->
+
+<!-- Add / Edit Student -->
+<div class="modal-overlay" id="student-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="student-modal-title">Add New Student</h3>
+      <button class="modal-close" onclick="closeModal('student-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="sm-edit-id" />
+      <div class="form-row">
+        <div class="form-group"><label>Full Name</label><input type="text" id="sm-name" placeholder="e.g. John Doe" /></div>
+        <div class="form-group"><label>Age</label><input type="number" id="sm-age" placeholder="e.g. 20" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Grade / Year</label>
+          <select id="sm-grade" class="modal-select"><option>Year 1</option><option>Year 2</option><option>Year 3</option><option>Year 4</option></select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="sm-status" class="modal-select"><option>Active</option><option>Inactive</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('student-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit Course -->
+<div class="modal-overlay" id="course-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="course-modal-title">Add New Course</h3>
+      <button class="modal-close" onclick="closeModal('course-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cm-edit-id" />
+      <div class="form-row">
+        <div class="form-group"><label>Course Name</label><input type="text" id="cm-name" placeholder="e.g. Computer Science" /></div>
+        <div class="form-group"><label>Course Code</label><input type="text" id="cm-code" placeholder="e.g. CS101" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Department</label><input type="text" id="cm-dept" placeholder="e.g. Engineering" /></div>
+        <div class="form-group"><label>Credits</label><input type="number" id="cm-credits" placeholder="e.g. 4" /></div>
+      </div>
+      <div class="form-group"><label>Instructor</label><input type="text" id="cm-instructor" placeholder="e.g. Dr. John Smith" /></div>
+      <div class="form-group"><label>Schedule</label><input type="text" id="cm-schedule" placeholder="e.g. Mon, Wed, Fri - 9:00 AM" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('course-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCourse()">Save Course</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add / Edit User -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="user-modal-title">Add New User</h3>
+      <button class="modal-close" onclick="closeModal('user-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="um-edit-id" />
+      <div class="form-row">
+        <div class="form-group"><label>Username</label><input type="text" id="um-username" placeholder="e.g. john_doe" /></div>
+        <div class="form-group"><label>Email</label><input type="email" id="um-email" placeholder="e.g. john@school.edu" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Role</label>
+          <select id="um-role" class="modal-select">
+            <option value="Administrator">Administrator</option>
+            <option value="Academic Staff">Academic Staff</option>
+            <option value="Lecturer">Lecturer</option>
+            <option value="Student">Student</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Status</label>
+          <select id="um-status" class="modal-select"><option>Active</option><option>Inactive</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Password</label><input type="password" id="um-password" placeholder="Set a password" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('user-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <h3>Confirm Delete</h3>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);font-size:.9rem;" id="confirm-message">Are you sure you want to delete this record? This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDeleteAction()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
